@@ -1,0 +1,11 @@
+# Clion directory
+.idea
+
+# Vscode directory
+.vscode
+
+# Build directory
+build/
+
+# clangd cache directory
+.cache
