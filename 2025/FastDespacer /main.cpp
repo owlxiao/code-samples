@@ -67,7 +67,7 @@ static constexpr std::size_t N = 8 * 1024 * 1024;
       count = Func(string);                                                    \
     }                                                                          \
   }                                                                            \
-  BENCHMARK(Func##_benchmark);
+  BENCHMARK(Func##_benchmark)->Unit(benchmark::kMicrosecond);
 
 BENCHMARK_DESPACE(baseline_despace);
 BENCHMARK_DESPACE(stl_despace);
