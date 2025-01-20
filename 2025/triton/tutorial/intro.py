@@ -112,9 +112,43 @@ def demo2():
     print(f'input  is: \n {input}')
     demo2_kernel[(1, 1, 1)](input, output)
     print(f'output is: \n {output}')
+
+"""
+### Demo 3
+
+This example illustrates how to write to a tensor.
+
+Expected results:
+
+input  is: 
+ tensor([[1., 1., 1.],
+        [1., 1., 1.],
+        [1., 1., 1.],
+        [1., 1., 1.]], device='cuda:0')
+output is: 
+ tensor([[10., 10., 10.],
+        [10., 10.,  1.],
+        [ 1.,  1.,  1.],
+        [ 1.,  1.,  1.]], device='cuda:0')
+
+"""
+
+@triton.jit
+def demo3_kernel(output_ptr):
+    range = tl.arange(0, 8)
+    tl.store(output_ptr + range, 10, range < 5)
+
+def demo3():
+    output= torch.ones(4, 3)
+
+    print(f'input  is: \n {output}')
+    demo3_kernel[(1, 1, 1)](output)
+    print(f'output is: \n {output}')
+
     
 if __name__ == '__main__':
     torch.set_default_device('cuda:0')
 
     # demo1()
-    demo2()
+    # demo2()
+    demo3()
