@@ -145,10 +145,58 @@ def demo3():
     demo3_kernel[(1, 1, 1)](output)
     print(f'output is: \n {output}')
 
+"""
+
+Demo 4
+
+This is an example with one program axis with 3 blocks.
+
+Expected results:
+
+input  is: 
+ tensor([[[1., 1., 1., 1.],
+         [1., 1., 1., 1.],
+         [1., 1., 1., 1.],
+         [1., 1., 1., 1.]],
+
+        [[1., 1., 1., 1.],
+         [1., 1., 1., 1.],
+         [1., 1., 1., 1.],
+         [1., 1., 1., 1.]]], device='cuda:0')
+output is: 
+ tensor([[[1., 1., 1., 1.],
+         [1., 1., 1., 1.],
+         [1., 1., 1., 1.],
+         [1., 1., 1., 1.]],
+
+        [[1., 1., 1., 1.],
+         [0., 0., 0., 0.],
+         [0., 0., 0., 0.],
+         [0., 0., 0., 0.]]], device='cuda:0')
+
+"""
+
+@triton.jit
+def demo4_kernel(input_ptr, output_ptr):
+    pid = tl.program_id(0)
+    range = tl.arange(0, 8) + pid * 8
+    mask = range < 20
+
+    x = tl.load(input_ptr + range, mask)
+    tl.store(output_ptr + range, x, mask)
+
+def demo4():
+    input = torch.ones(2, 4, 4)
+    output= torch.zeros_like(input)
+
+    print(f'input  is: \n {input}')
+    demo4_kernel[(3, 1, 1)](input, output)
+    print(f'output is: \n {output}')
     
 if __name__ == '__main__':
     torch.set_default_device('cuda:0')
 
     # demo1()
     # demo2()
-    demo3()
+    # demo3()
+    demo4()
