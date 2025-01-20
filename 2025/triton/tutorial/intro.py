@@ -50,8 +50,71 @@ def demo1():
     print(f'input  is: \n {input}')
     demo1_kernel[(1, 1, 1)](input, output)
     print(f'output is: \n {output}')
+
+"""
+### Demo 2
+
+This example uses some tricks to read and store data in a 2D array.
+
+Expected results:
+
+input  is: 
+ tensor([[1., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1., 1., 1.],
+        [1., 1., 1., 1.]], device='cuda:0')
+output is: 
+ tensor([[1., 1., 1., 0.],
+        [1., 1., 1., 0.],
+        [0., 0., 0., 0.],
+        [0., 0., 0., 0.]], device='cuda:0')
+        
+"""
+
+@triton.jit
+def demo2_kernel(input_ptr, output_ptr):
+    # Generate the row index range (0 to 7)
+    # [0, 1, 2, 3, 4, 5, 6, 7]
+    i_range = tl.arange(0, 8)[:, None]
+    # Generate the column index range (0 to 4)
+    # [ [0], [1], [2], [3] ]
+    j_range = tl.arange(0, 4)[None, :]
+    # Calculate the range
+    # [[ 0,  1,  2,  3],
+    #  [ 4,  5,  6,  7],
+    #  [ 8,  9, 10, 11],
+    #  [12, 13, 14, 15],
+    #  [16, 17, 18, 19],
+    #  [20, 21, 22, 23],
+    #  [24, 25, 26, 27],
+    #  [28, 29, 30, 31]]
+    range = i_range * 4 + j_range
+
+    # [[ True,  True,  True, False],
+    #  [ True,  True,  True, False],
+    #  [False, False, False, False],
+    #  [False, False, False, False],
+    #  [False, False, False, False],
+    #  [False, False, False, False],
+    #  [False, False, False, False],
+    #  [False, False, False, False]]
+    mask = (i_range < 2) & (j_range < 3)
+
+    # Load x from DRAM.
+    x = tl.load(input_ptr + range, mask, 0)
+    # Write x back to DRAM.
+    tl.store(output_ptr + range, x, mask)
+
+def demo2():
+    input = torch.ones(4, 4)
+    output= torch.zeros_like(input)
+
+    print(f'input  is: \n {input}')
+    demo2_kernel[(1, 1, 1)](input, output)
+    print(f'output is: \n {output}')
     
 if __name__ == '__main__':
     torch.set_default_device('cuda:0')
 
-    demo1()
+    # demo1()
+    demo2()
