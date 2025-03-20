@@ -6,6 +6,7 @@
 
 # Build directory
 build/
+compile_commands.json
 
 # clangd cache directory
 .cache
