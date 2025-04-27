@@ -62,8 +62,8 @@ def run_benchmark(perf_func: callable, a: torch.Tensor, b: torch.Tensor, tag: st
     return out, mean_time
 
 
-Ss = [1024, 2048, 4096]
-Ks = [1024, 2048, 4096]
+Ss = [1024, 2048, 4096, 8192]
+Ks = [1024, 2048, 4096, 8192]
 SKs = [(S, K) for S in Ss for K in Ks]
 
 for (S, K) in SKs:
@@ -74,4 +74,5 @@ for (S, K) in SKs:
     c = torch.randn((S, K)).cuda().float().contiguous()
 
     run_benchmark(lib.elementwise_add_f32, a, b, "f32", c)
+    run_benchmark(lib.elementwise_add_f32x4, a, b, "f32x4", c)
     run_benchmark(partial(torch.add, out=c), a, b, "f32_th")
