@@ -78,3 +78,10 @@ for (S, K) in SKs:
     run_benchmark(lib.elementwise_add_f32, a, b, "f32", c)
     run_benchmark(lib.elementwise_add_f32x4, a, b, "f32x4", c)
     run_benchmark(partial(torch.add, out=c), a, b, "f32_th")
+
+    a_f16 = a.half().contiguous()
+    b_f16 = b.half().contiguous()
+    c_f16 = c.half().contiguous()
+    run_benchmark(lib.elementwise_add_f16, a_f16, b_f16, "f16", c_f16)
+    run_benchmark(lib.elementwise_add_f16x2, a_f16, b_f16, "f16x2", c_f16)
+    run_benchmark(partial(torch.add, out=c_f16), a_f16, b_f16, "f16_th")
