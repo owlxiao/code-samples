@@ -40,53 +40,40 @@ __global__ void elementwise_add_f32x4_kernel(float *a, float *b, float *c,
 }
 
 // --------------------- PyTorch bindings for custom kernel
-void elementwise_add_f32(torch::Tensor a, torch::Tensor b, torch::Tensor c) {
-  const auto ndim = a.dim();
-  assert(ndim == 2);
+struct LaunchConfig {
+  dim3 block;
+  dim3 grid;
+  int num;
+};
 
-  const auto S = a.size(0);
-  const auto K = a.size(1);
-  const auto N = S * K;
-
-  if (K < 1024) {
-    dim3 block(K);
-    dim3 grid(S);
-    elementwise_add_f32_kernel<<<grid, block>>>(
-        a.data_ptr<float>(), b.data_ptr<float>(), c.data_ptr<float>(), N);
+template <int VECTOR_SIZE = 1>
+LaunchConfig getLaunchConfig(int S, int K, int VecSize) {
+  LaunchConfig config;
+  config.num = S * K;
+  if (K / VecSize <= 1024) {
+    config.block = dim3(K / VecSize);
+    config.grid = dim3(S);
   } else {
-    int N = 1;
-    for (int i = 0; i < ndim; ++i)
-      N *= a.size(i);
-    dim3 block(256);
-    dim3 grid((N + 256 - 1) / 256);
-    elementwise_add_f32_kernel<<<grid, block>>>(
-        a.data_ptr<float>(), b.data_ptr<float>(), c.data_ptr<float>(), N);
+    config.block = dim3(256 / VecSize);
+    config.grid = dim3((config.num + 256 - 1) / 256);
   }
+
+  return config;
 }
 
-void elementwise_add_f32x4(torch::Tensor a, torch::Tensor b, torch::Tensor c) {
-  const auto ndim = a.dim();
-  assert(ndim == 2);
-
-  const auto S = a.size(0);
-  const auto K = a.size(1);
-  const auto N = S * K;
-
-  if ((K / elements) <= 1024) {
-    dim3 block(K / elements);
-    dim3 grid(S);
-    elementwise_add_f32x4_kernel<<<grid, block>>>(
-        a.data_ptr<float>(), b.data_ptr<float>(), c.data_ptr<float>(), N);
-  } else {
-    int N = 1;
-    for (int i = 0; i < ndim; ++i)
-      N *= a.size(i);
-    dim3 block(256 / elements);
-    dim3 grid((N + 256 - 1) / 256);
-    elementwise_add_f32x4_kernel<<<grid, block>>>(
-        a.data_ptr<float>(), b.data_ptr<float>(), c.data_ptr<float>(), N);
+#define TORCH_BINDING_ELEM_ADD(name, dtype, ctype, vec_size)                   \
+  void elementwise_add_##name(torch::Tensor a, torch::Tensor b,                \
+                              torch::Tensor c) {                               \
+    TORCH_CHECK(a.dim() == 2, "Expected 2D tensor");                           \
+    TORCH_CHECK(a.scalar_type() == dtype, "Expected " #dtype " tensor");       \
+    auto config = getLaunchConfig(a.size(0), a.size(1), vec_size);             \
+    elementwise_add_##name##_kernel<<<config.grid, config.block>>>(            \
+        a.data_ptr<ctype>(), b.data_ptr<ctype>(), c.data_ptr<ctype>(),         \
+        config.num);                                                           \
   }
-}
+
+TORCH_BINDING_ELEM_ADD(f32, torch::kFloat32, float, 1)
+TORCH_BINDING_ELEM_ADD(f32x4, torch::kFloat32, float, 4)
 
 #define STRINGFY(str) #str
 #define TORCH_BINDING_COMMON_EXTENSION(func)                                   \
