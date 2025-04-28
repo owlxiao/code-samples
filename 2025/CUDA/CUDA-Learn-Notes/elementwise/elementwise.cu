@@ -72,8 +72,8 @@ void elementwise_add_f32x4(torch::Tensor a, torch::Tensor b, torch::Tensor c) {
   const auto K = a.size(1);
   const auto N = S * K;
 
-  if (K < 1024) {
-    dim3 block(K / 4);
+  if ((K / elements) <= 1024) {
+    dim3 block(K / elements);
     dim3 grid(S);
     elementwise_add_f32x4_kernel<<<grid, block>>>(
         a.data_ptr<float>(), b.data_ptr<float>(), c.data_ptr<float>(), N);
@@ -81,7 +81,7 @@ void elementwise_add_f32x4(torch::Tensor a, torch::Tensor b, torch::Tensor c) {
     int N = 1;
     for (int i = 0; i < ndim; ++i)
       N *= a.size(i);
-    dim3 block(256);
+    dim3 block(256 / elements);
     dim3 grid((N + 256 - 1) / 256);
     elementwise_add_f32x4_kernel<<<grid, block>>>(
         a.data_ptr<float>(), b.data_ptr<float>(), c.data_ptr<float>(), N);
