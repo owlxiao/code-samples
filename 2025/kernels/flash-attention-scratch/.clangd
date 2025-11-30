@@ -1,0 +1,35 @@
+---
+If:
+  PathMatch: .*\.h
+
+CompileFlags:
+  Add: -xc++
+---
+If:
+  PathMatch: .*\.cuh
+
+CompileFlags:
+  Add: [-xcuda, -std=c++20]
+---
+If:
+  PathMatch: .*\.cu
+
+CompileFlags:
+  Compiler: /usr/local/cuda/bin/nvcc
+  Add: 
+    - -xcuda
+    - "--cuda-path=/usr/local/cuda"
+    - -std=c++20
+    - -Wno-unknown-warning-option
+    - -D__CUDACC__
+    - --no-cuda-version-check
+  Remove:
+    - "--generate-dependencies-with-compile"
+    - "--dependency-output"
+    - "--expt-relaxed-constexpr"
+    - "--use_fast_math"
+    - "--resource-usage"
+    - "-gencode=arch=compute_89,code=compute_89"
+    - "-gencode=arch=compute_89,code=sm_89"
+    - "--compiler-options"
+---

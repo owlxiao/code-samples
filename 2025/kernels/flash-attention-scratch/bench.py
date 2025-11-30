@@ -1,10 +1,32 @@
+import os
 import torch
 import time
 import math
 from typing import Callable, Optional
+from torch.utils.cpp_extension import load
+from pathlib import Path
 
 
 from flash_attn import flash_attn_func
+
+
+def get_project_dir():
+    return os.path.dirname(os.path.abspath(__file__))
+
+
+my_flash_attn = load(
+    name="my_flash_attn",
+    sources=['./src/flash.cpp', './src/flash.cu'],
+    extra_cuda_cflags=[
+        '-O3',
+        '-std=c++20',
+        '--use_fast_math',
+        '-Xptxas=-warn-spills',
+        '-Xptxas=-warn-lmem-usage',
+        '--resource-usage',
+    ],
+    extra_include_paths=[str(Path(get_project_dir()) / 'src/include')]
+)
 
 
 def benchmark_kernel(
@@ -141,6 +163,17 @@ def run_benchmark():
         head_dim=HEAD_DIM
     )
 
+    # My Flash Attention kernel
+    benchmark_kernel(
+        func=lambda: my_flash_attn.forward(q, k, v),  # type: ignore
+        name="My Flash Attention (kernel 1)",
+        batch_size=BATCH_SIZE,
+        num_heads=NUM_HEADS,
+        seq_len=SEQ_LEN,
+        head_dim=HEAD_DIM
+    )
+
 
 if __name__ == "__main__":
     run_benchmark()
+    # print(get_project_dir())
