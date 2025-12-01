@@ -120,9 +120,9 @@ def run_benchmark():
     SEQ_LEN = 4096  # Careful: If too large, Naive attention will OOM
     DTYPE = torch.float16  # Flash Attention usually requires fp16 or bf16
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda")
     print(
-        f"Running on: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU'}")
+        f"Running on: {torch.cuda.get_device_name(0)}")
     print(f"Shape: [B={BATCH_SIZE}, H={NUM_HEADS}, L={SEQ_LEN}, D={HEAD_DIM}]")
     print("-" * 40)
 

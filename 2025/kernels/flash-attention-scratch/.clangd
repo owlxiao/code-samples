@@ -6,13 +6,9 @@ CompileFlags:
   Add: -xc++
 ---
 If:
-  PathMatch: .*\.cuh
-
-CompileFlags:
-  Add: [-xcuda, -std=c++20]
----
-If:
-  PathMatch: .*\.cu
+  PathMatch: 
+    - .*\.cu
+    - .*\.cuh
 
 CompileFlags:
   Compiler: /usr/local/cuda/bin/nvcc
@@ -32,4 +28,5 @@ CompileFlags:
     - "-gencode=arch=compute_89,code=compute_89"
     - "-gencode=arch=compute_89,code=sm_89"
     - "--compiler-options"
----
+    - "-Xptxas=-warn-spills"
+    - "-Xptxas=-warn-lmem-usage"
