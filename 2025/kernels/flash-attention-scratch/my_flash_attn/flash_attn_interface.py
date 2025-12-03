@@ -1,2 +1,7 @@
-def flash_attn_func():
-    print("Hello from flash_attn_func!")
+def flash_attn_func(
+        q,
+        k,
+        v,
+        softmax_scale=None,
+):
+    return q
