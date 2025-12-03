@@ -1,0 +1,1 @@
+from my_flash_attn.flash_attn_interface import flash_attn_func
