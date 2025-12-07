@@ -1,0 +1,3 @@
+[submodule "2025/kernels/flash-attention-scratch/csrc/cutlass"]
+	path = 2025/kernels/flash-attention-scratch/csrc/cutlass
+	url = git@github.com:NVIDIA/cutlass.git

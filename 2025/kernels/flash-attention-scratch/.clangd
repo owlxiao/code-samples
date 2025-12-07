@@ -9,6 +9,7 @@ If:
   PathMatch: 
     - .*\.cu
     - .*\.cuh
+    - .*\.h
 
 CompileFlags:
   Compiler: /usr/local/cuda/bin/nvcc
