@@ -2,16 +2,13 @@ from typing import Optional, Sequence, Tuple, Union
 
 import torch
 
-import my_flash_attn_2_cuda as flash_attn_gpu
-
-_torch_custom_op_wrapper = torch.library.custom_op
+import my_flash_attn_2_kernels as flash_attn_gpu
 
 
 def maybe_contiguous(x):
     return x.contiguous() if x is not None and x.stride(-1) != 1 else x
 
 
-@_torch_custom_op_wrapper("flash_attn::_flash_attn_forward", mutates_args=(), device_types="cuda")
 def _flash_attn_forward(
     q: torch.Tensor,
     k: torch.Tensor,
@@ -44,10 +41,7 @@ def _flash_attn_forward(
     return out, softmax_lse, S_dmask, rng_state
 
 
-if torch.__version__ >= "2.4.0":
-    _wrapped_flash_attn_forward = torch.ops.flash_attn._flash_attn_forward
-else:
-    _wrapped_flash_attn_forward = _flash_attn_forward
+_wrapped_flash_attn_forward = _flash_attn_forward
 
 
 class FlashAttnFunc(torch.autograd.Function):

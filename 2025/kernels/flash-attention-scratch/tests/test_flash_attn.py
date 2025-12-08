@@ -9,9 +9,7 @@ from flash_attn.bert_padding import pad_input, unpad_input
 from flash_attn.flash_attn_interface import _get_block_size_n
 from flash_attn.layers.rotary import apply_rotary_emb
 
-from my_flash_attn import (
-    flash_attn_func,
-)
+from my_flash_attn import flash_attn_func as my_flash_attn_func
 
 MAX_HEADDIM_SM8x = 192
 
@@ -691,7 +689,7 @@ def test_flash_attn_output(
             return_attn_probs=True,
         )
     else:
-        out, lse, S_dmask = flash_attn_func(
+        out, lse, S_dmask = my_flash_attn_func(
             q,
             k,
             v,

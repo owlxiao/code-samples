@@ -268,7 +268,7 @@ if not SKIP_CUDA_BUILD:
 
     ext_modules.append(
         CUDAExtension(
-            name="my_flash_attn_2_cuda",
+            name="my_flash_attn_2_kernels",
             sources=[
                 "csrc/my_flash_attn/flash_api.cpp",
                 # "csrc/flash_attn/src/flash_fwd_hdim32_fp16_sm80.cu",
