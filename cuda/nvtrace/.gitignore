@@ -1,0 +1,4 @@
+nvbit_release/
+traces/
+*.so
+*.o
